@@ -167,6 +167,21 @@ function render(){
  <td><input aria-label="Notes" value="${esc(x.notes)}" data-id="${x.id}" data-field="notes" style="min-width:180px"></td>
  <td><div class="row-actions"><button class="small danger" data-delete="${x.id}">Delete</button></div></td>`;
  body.appendChild(tr)});
+ const finalBody=document.getElementById("finalRows");
+ finalBody.innerHTML="";
+ const grouped={};
+ filtered.forEach(x=>{const c=(x.category||"Other").trim()||"Other";(grouped[c]??=[]).push(x)});
+ Object.keys(grouped).sort((a,b)=>a.localeCompare(b)).forEach(category=>{
+  const heading=document.createElement("tr");
+  heading.innerHTML='<th colspan="4" style="text-align:left;background:#edf2f7">'+esc(category)+'</th>';
+  finalBody.appendChild(heading);
+  grouped[category].sort((a,b)=>a.item.localeCompare(b.item)).forEach(x=>{
+   const tr=document.createElement("tr");
+   tr.innerHTML='<td>'+esc(x.item)+'</td><td>'+esc(x.buy||"")+'</td><td>'+esc(x.unit||"")+'</td><td>'+esc(x.dates||"")+'</td>';
+   finalBody.appendChild(tr);
+  });
+ });
+ document.getElementById("finalEmpty").hidden=filtered.length>0;
  document.getElementById("empty").hidden=filtered.length>0;
  document.getElementById("itemStat").textContent=`${filtered.length} items shown · ${items.length} total`;
  document.getElementById("dateStat").textContent=`Date range: ${fromV||"Any"} to ${toV||"Any"}`;
