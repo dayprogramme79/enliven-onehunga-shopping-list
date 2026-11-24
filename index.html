@@ -1,200 +1,244 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Enliven Onehunga – Menu & Shopping App</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Enliven Onehunga Shopping List</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
-:root{--navy:#23466f;--blue:#3569a5;--bg:#f3f6fa;--line:#d9e0e8;--muted:#637083}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);font:15px/1.45 Arial,sans-serif;color:#1d2938}
-header{background:var(--navy);color:white;padding:20px max(16px,calc((100% - 1250px)/2))}
-header h1{font-size:clamp(22px,4vw,30px);margin:0 0 4px}header p{margin:0;color:#e4edf8}
-main{max-width:1250px;margin:18px auto;padding:0 13px 40px}.panel{background:white;border:1px solid var(--line);border-radius:13px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px #172b4408}
-h2{font-size:19px;margin:0 0 12px}.hint{font-size:13px;color:var(--muted)}
-input,select,textarea,button{font:inherit;border:1px solid #c7d1dd;border-radius:8px;padding:9px;background:white;color:#1d2938;max-width:100%;min-width:0}
-button{cursor:pointer;font-weight:700;background:var(--blue);color:white;border-color:var(--blue)}button.secondary{background:white;color:var(--navy)}button.danger{background:white;color:#a12c2c;border-color:#e6bcbc}button:disabled{opacity:.5;cursor:wait}
-.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.field label{display:block;font-size:13px;font-weight:700;color:#4a586a;margin-bottom:5px}
-.upload{border:2px dashed #9db2ca;border-radius:12px;padding:18px;text-align:center;background:#f8fbff}
-.upload input{display:block;margin:10px auto}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-textarea{width:100%;min-height:115px;font-family:Arial,sans-serif;font-size:14px}
-.status{margin-top:9px;color:#294d78;font-size:14px;white-space:pre-wrap}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:900px}th,td{padding:8px;border-bottom:1px solid #e7ebf0;text-align:left;vertical-align:top}th{background:#eef3f8;font-size:13px;position:sticky;top:0}
-td input,td textarea,td select{width:100%;min-width:100px;padding:7px}td textarea{min-height:65px;min-width:190px}
-.stats{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.pill{background:#edf3fa;border-radius:8px;padding:6px 9px;font-size:13px}
-.right{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
-@media(max-width:750px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:430px){.grid{grid-template-columns:1fr}}
-</style></head>
+:root{--navy:#23466f;--blue:#3569a5;--bg:#f4f6f9;--line:#d9e0e8;--muted:#637083}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font:16px/1.45 Arial,sans-serif;color:#1d2938}
+header{background:var(--navy);color:white;padding:22px max(18px,calc((100% - 1180px)/2))}
+header h1{font-size:clamp(22px,4vw,30px);margin:0 0 5px}header p{margin:0;color:#e4edf8}
+main{max-width:1180px;margin:20px auto;padding:0 14px 40px}
+.panel{background:white;border:1px solid var(--line);border-radius:13px;padding:16px;margin-bottom:15px;box-shadow:0 2px 8px #172b4408}
+.controls{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:10px;align-items:end}
+label{display:block;font-size:13px;font-weight:700;color:#4a586a;margin-bottom:5px}
+input,select,button{font:inherit;border:1px solid #c7d1dd;border-radius:8px;padding:10px;background:white;color:#1d2938;min-width:0;width:100%}
+button{cursor:pointer;font-weight:700;background:var(--blue);color:white;border-color:var(--blue)}
+button.secondary{background:white;color:var(--navy)}button.danger{background:#fff;color:#a12c2c;border-color:#e6bcbc}
+button.small{padding:7px 9px;font-size:13px;width:auto}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
+.stats{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:14px;margin:12px 0 0}
+.stat{background:#edf3fa;border-radius:8px;padding:7px 10px}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:900px}
+th,td{border-bottom:1px solid #e7ebf0;padding:9px 8px;text-align:left;vertical-align:top}
+th{background:#eef3f8;color:#31465e;font-size:13px;position:sticky;top:0}
+td input{padding:7px}
+td .qty{width:95px}td .unit{width:85px}
+.muted{color:var(--muted);font-size:13px}
+.row-actions{display:flex;gap:5px}
+.empty{text-align:center;color:var(--muted);padding:28px}
+.formgrid{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:10px}
+footer{color:var(--muted);font-size:13px;padding:8px 2px}
+@media(max-width:800px){.controls{grid-template-columns:repeat(2,minmax(0,1fr))}.formgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:430px){.controls,.formgrid{grid-template-columns:1fr}}
+</style>
+</head>
 <body>
-<header><h1>Enliven Onehunga – Menu & Shopping App</h1><p>Upload a menu photo or file → fill the daily menu form → create a categorized shopping list → export to Google Sheets.</p></header>
+<header><h1>Enliven Onehunga – Shopping List</h1><p>30 November – 11 December 2026 · Edit quantities, dates and items, then export to Google Sheets.</p></header>
 <main>
 <section class="panel">
-<h2>1. Upload menu source</h2>
-<div class="upload">
-<strong>Choose a menu photo, PDF, Word/Excel or CSV file</strong>
-<p class="hint">Photos and scanned PDFs use OCR. Excel and CSV files are read directly.</p>
-<input id="sourceFile" type="file" accept="image/*,.pdf,.xlsx,.xls,.csv,.txt" capture="environment">
-<div id="sourceName" class="hint">No source selected yet.</div>
-<div class="actions" style="justify-content:center"><button id="readBtn">Read source picture / file</button><button id="clearSource" class="secondary">Clear source</button></div>
-<div id="readStatus" class="status" aria-live="polite"></div>
-</div>
-<div style="margin-top:13px">
-<label for="sourceText"><b>Extracted text – check and correct OCR results here</b></label>
-<textarea id="sourceText" placeholder="The text from your menu photo or file appears here. You can correct OCR mistakes before filling the menu form."></textarea>
-<div class="actions"><button id="fillBtn">Fill daily menu form from text</button><button id="sampleBtn" class="secondary">Load example menu from 30 Nov – 11 Dec</button></div>
-<p class="hint">The app may not correctly read handwritten changes, crossed-out text or complex table columns. Always check the daily menu form after extraction.</p>
-</div>
+ <div class="controls">
+  <div><label for="fromDate">From date</label><input id="fromDate" type="date" value="2026-11-30"></div>
+  <div><label for="toDate">To date</label><input id="toDate" type="date" value="2026-12-11"></div>
+  <div><label for="sortBy">Sort by</label><select id="sortBy"><option value="item">Item name</option><option value="count">How many menu dates</option><option value="date">Next shopping date</option><option value="category">Category</option></select></div>
+  <div><label for="direction">Order</label><select id="direction"><option value="asc">Ascending</option><option value="desc">Descending</option></select></div>
+  <div><label for="search">Find item</label><input id="search" placeholder="Search…"></div>
+  <div><label for="categoryFilter">Category</label><select id="categoryFilter"><option value="">All categories</option></select></div>
+ </div>
+ <div class="stats"><span class="stat" id="itemStat">0 items</span><span class="stat" id="dateStat">Date range: 30 Nov – 11 Dec 2026</span><span class="stat">Changes save on this device</span></div>
+ <div class="actions">
+  <button id="saveBtn" class="small">Save changes</button>
+  <button id="exportBtn" class="small">Export Excel for Google Sheets</button>
+  <button id="importBtn" class="secondary small">Import Excel file</button><input id="fileInput" type="file" accept=".xlsx,.xls,.csv" hidden>
+  <button id="resetBtn" class="danger small">Restore original list</button>
+ </div>
 </section>
-
+<section class="panel" id="resourcePanel">
+ <h2 style="margin:0 0 8px;font-size:19px">Automatically fill from a menu resource</h2>
+ <p class="muted">Upload a menu photo, scanned PDF, Excel, CSV or text file. The app reads the resource and prepares editable menu text before creating your shopping list.</p>
+ <div class="formgrid">
+  <div style="grid-column:span 2"><label for="resourceFile">Choose photo or file (or use phone camera)</label><input id="resourceFile" type="file" accept="image/*,.pdf,.xlsx,.xls,.csv,.txt" capture="environment"></div>
+  <div style="display:flex;align-items:end"><button id="readResourceBtn" type="button">Read resource</button></div>
+  <div style="display:flex;align-items:end"><button id="makeListBtn" type="button" class="secondary">Create shopping list</button></div>
+ </div>
+ <p id="resourceStatus" class="muted" aria-live="polite">After reading, check the text and correct any OCR mistakes before creating the list.</p>
+ <label for="resourceText">Extracted menu text (you can edit this)</label>
+ <textarea id="resourceText" rows="8" style="width:100%;font:inherit;border:1px solid #c7d1dd;border-radius:8px;padding:10px" placeholder="Extracted menu text will appear here. Example: 1/12 Lunch: Chicken, mixed vegetables, rice"></textarea>
+ <p class="muted">Automatic reading is an assistant, not a guaranteed interpretation. Please check names, dates and quantities before shopping.</p>
+</section>
 <section class="panel">
-<h2>2. Menu details</h2>
-<div class="grid">
-<div class="field"><label for="location">Location / Service</label><input id="location" value="Enliven Onehunga Day Service"></div>
-<div class="field"><label for="fromDate">From date</label><input id="fromDate" type="date" value="2026-11-30"></div>
-<div class="field"><label for="toDate">To date</label><input id="toDate" type="date" value="2026-12-11"></div>
-<div class="field"><label for="menuSort">Sort menu by</label><select id="menuSort"><option value="date">Date (earliest first)</option><option value="date-desc">Date (latest first)</option></select></div>
-</div>
-<div class="stats"><span class="pill" id="menuCount">0 menu dates</span><span class="pill">Meal categories: Morning Tea · Lunch · Dessert</span></div>
+ <h2 style="margin:0 0 12px;font-size:19px">Add a shopping item</h2>
+ <div class="formgrid">
+  <div><label for="newItem">Item name</label><input id="newItem" placeholder="e.g. Milk"></div>
+  <div><label for="newCategory">Category</label><input id="newCategory" placeholder="e.g. Dairy"></div>
+  <div><label for="newCount">How many menu dates</label><input id="newCount" type="number" min="0" step="1" value="1"></div>
+  <div><label for="newBuy">Number to buy</label><input id="newBuy" type="number" min="0" step="0.1" placeholder="Enter quantity"></div>
+  <div><label for="newUnit">Unit</label><input id="newUnit" placeholder="e.g. packets"></div>
+  <div style="grid-column:span 2"><label for="newDates">When needed (dates, DD/MM)</label><input id="newDates" placeholder="e.g. 2/12, 5/12"></div>
+  <div style="grid-column:span 2"><label for="newNotes">Notes</label><input id="newNotes" placeholder="Optional"></div>
+  <div style="display:flex;align-items:end"><button id="addBtn">Add item</button></div>
+ </div>
 </section>
-
 <section class="panel">
-<div class="right"><h2>3. Daily menu form</h2><button id="addDate" class="secondary">+ Add menu date</button></div>
-<p class="hint">Every date has separate fields for Morning Tea, Lunch and Dessert. The location is shown above and included in the exported file.</p>
-<div class="tablewrap"><table><thead><tr><th>Date</th><th>Morning Tea</th><th>Lunch</th><th>Dessert</th><th>Remove</th></tr></thead><tbody id="menuRows"></tbody></table></div>
-<div class="actions"><button id="makeShopping">Create / update shopping list from menu</button></div>
+ <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+  <h2 style="margin:0;font-size:19px">Shopping items</h2><span class="muted">Change “Number to buy” to the amount you want to purchase.</span>
+ </div>
+ <div class="table-wrap">
+ <table><thead><tr><th>Item</th><th>Category</th><th>How many menu dates</th><th>When needed</th><th>Number to buy</th><th>Unit</th><th>Notes</th><th>Actions</th></tr></thead><tbody id="rows"></tbody></table>
+ <div id="empty" class="empty" hidden>No items match these filters.</div>
+ </div>
 </section>
-
-<section class="panel">
-<div class="right"><h2>4. Shopping list</h2><button id="addItem" class="secondary">+ Add shopping item</button></div>
-<div class="grid">
-<div class="field"><label>Filter from</label><input id="filterFrom" type="date" value="2026-11-30"></div>
-<div class="field"><label>Filter to</label><input id="filterTo" type="date" value="2026-12-11"></div>
-<div class="field"><label>Sort by</label><select id="sortBy"><option value="item">Item name</option><option value="count">How many dates</option><option value="date">Next date needed</option><option value="category">Meal category</option></select></div>
-<div class="field"><label>Order</label><select id="direction"><option value="asc">Ascending</option><option value="desc">Descending</option></select></div>
-</div>
-<div class="stats"><span class="pill" id="itemCount">0 shopping items</span><span class="pill">Edit “Number to buy” to enter the quantity you need.</span></div>
-<div class="tablewrap"><table><thead><tr><th>Location</th><th>Meal category</th><th>Item</th><th>How many dates</th><th>When needed</th><th>Number to buy</th><th>Unit</th><th>Delete</th></tr></thead><tbody id="shoppingRows"></tbody></table></div>
-<div class="actions"><button id="saveBtn">Save changes on this device</button><button id="exportBtn">Produce Google Sheets file (Excel)</button><button id="importBtn" class="secondary">Import spreadsheet</button><input id="importFile" type="file" accept=".xlsx,.xls,.csv" hidden><button id="clearAll" class="danger">Clear all data</button></div>
-<div id="saveStatus" class="status"></div>
-</section>
-<section class="panel"><h2>How it works</h2><ol><li>Upload your menu picture or file and press Read source.</li><li>Check the extracted text, then press Fill daily menu form from text.</li><li>Check the location, dates, Morning Tea, Lunch and Dessert columns. Correct anything OCR missed.</li><li>Press Create / update shopping list from menu. Repeated items are grouped by meal category, with the dates they are needed.</li><li>Enter the actual number to buy, save, and export the Excel file for Google Sheets.</li></ol><p class="hint">This browser app does not directly write to Google Drive. Export the workbook, then use Google Sheets → File → Import → Upload. Saved changes stay in this browser on this device; export a backup when needed.</p></section>
+<footer>Tip: Export creates an .xlsx workbook. In Google Sheets, choose File → Import → Upload and select the exported workbook. The app stores saved changes in this browser on this device; export regularly to keep a backup.</footer>
 </main>
 <script>
-const $=id=>document.getElementById(id);
-let menu=[],shopping=[];
+const original = [
+["Biscuits","Morning tea",10,"30/11, 1/12, 2/12, 3/12, 4/12, 7/12, 8/12, 9/12, 10/12, 11/12","","","Every weekday"],
+["Crackers","Morning tea",10,"30/11, 1/12, 2/12, 3/12, 4/12, 7/12, 8/12, 9/12, 10/12, 11/12","","","Every weekday"],
+["Fresh fruit","Morning tea",10,"30/11, 1/12, 2/12, 3/12, 4/12, 7/12, 8/12, 9/12, 10/12, 11/12","","","Every weekday"],
+["Chicken","Meat / protein",4,"1/12, 4/12, 7/12, 10/12","","","Casserole, roast chicken, club sandwich, chicken meal"],
+["Beef","Meat / protein",2,"3/12, 9/12","","","Beef stew; beef noodle"],
+["Frank sausages","Meat / protein",1,"8/12","","","Hotdog"],
+["Ham","Meat / protein",1,"7/12","","","Club sandwich"],
+["Mixed vegetables","Vegetables",4,"1/12, 3/12, 4/12, 9/12","","","Casserole, stew, roast chicken, beef noodle"],
+["Tomato (fresh)","Vegetables",1,"7/12","","","Club sandwich"],
+["Canned tomatoes","Vegetables",1,"1/12","","","Chicken casserole"],
+["Onion","Vegetables",1,"8/12","","","Hotdog"],
+["Coleslaw","Vegetables",3,"2/12, 8/12, 10/12","","","Fish fingers; hotdog"],
+["Potato","Vegetables",1,"10/12","","","Chicken meal"],
+["Rice","Bread / grains",1,"1/12","","","Chicken casserole"],
+["Bread","Bread / grains",2,"4/12, 7/12","","","Roast chicken; club sandwich"],
+["Long hotdog buns","Bread / grains",1,"8/12","","","Hotdog"],
+["Noodles","Bread / grains",1,"9/12","","","Beef noodle"],
+["Chips","Other lunch items",1,"2/12","","","Fish fingers and chips"],
+["Juice","Other lunch items",1,"11/12","","","Christmas party"],
+["Yoghurt","Dessert",4,"30/11, 1/12, 9/12, 10/12","","","Yoghurt with fruit; 9/12 dessert handwritten change unclear"],
+["Fruit for dessert / fruit salad","Dessert",8,"30/11, 1/12, 2/12, 3/12, 4/12, 8/12, 9/12, 10/12","","","Fruit salad or fruit served with dessert"],
+["Ice cream","Dessert",3,"3/12, 7/12, 9/12","","","9/12 handwritten change"],
+["Instant pudding","Dessert",2,"4/12, 8/12","","","With fruit"],
+["Jelly","Dessert",2,"2/12, 11/12","","","11/12 handwritten change"],
+["Bread","Christmas party",1,"11/12","","","Christmas party"]
+].map((r,i)=>({id:i+1,item:r[0],category:r[1],count:r[2],dates:r[3],buy:r[4],unit:r[5],notes:r[6]}));
+let items = load();
+function load(){try{return JSON.parse(localStorage.getItem("enlivenShoppingV1"))||structuredClone(original)}catch(e){return structuredClone(original)}}
+function save(){localStorage.setItem("enlivenShoppingV1",JSON.stringify(items));flash("Saved on this device.");}
+function flash(msg){const b=document.getElementById("saveBtn");let old=b.textContent;b.textContent=msg;setTimeout(()=>b.textContent=old,1600)}
+function dateObj(s){let [d,m]=s.trim().split("/").map(Number);return new Date(2026,m-1,d)}
+function datesInRange(str,from,to){return (str||"").split(",").map(x=>x.trim()).filter(Boolean).filter(s=>{let d=dateObj(s);return !isNaN(d)&&(!from||d>=from)&&(!to||d<=to)})}
+function updateCategories(){let sel=document.getElementById("categoryFilter"),v=sel.value;let cats=[...new Set(items.map(x=>x.category).filter(Boolean))].sort();sel.innerHTML='<option value="">All categories</option>'+cats.map(c=>`<option>${esc(c)}</option>`).join("");sel.value=cats.includes(v)?v:""}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function load(){try{let d=JSON.parse(localStorage.getItem("enlivenMenuShopV2")||"{}");menu=d.menu||[];shopping=d.shopping||[]}catch(e){menu=[];shopping=[]}}
-function save(){localStorage.setItem("enlivenMenuShopV2",JSON.stringify({location:$("location").value,menu,shopping}));$("saveStatus").textContent="Saved on this device."}
-function fmtDate(v){if(!v)return "";let [y,m,d]=v.split("-");return `${+d}/${+m}`}
-function isoFromToken(s){let m=s.match(/(\d{1,2})\s*[\/.-]\s*(\d{1,2})/);if(!m)return "";let d=+m[1],mo=+m[2];return `2026-${String(mo).padStart(2,"0")}-${String(d).padStart(2,"0")}`}
-function inRange(iso,from,to){return (!from||iso>=from)&&(!to||iso<=to)}
-function renderMenu(){
- let from=$("fromDate").value,to=$("toDate").value,arr=menu.filter(x=>inRange(x.date,from,to));
- arr.sort((a,b)=>$("menuSort").value==="date-desc"?b.date.localeCompare(a.date):a.date.localeCompare(b.date));
- $("menuRows").innerHTML=arr.map(x=>`<tr><td><input type="date" data-menu="${x.id}" data-k="date" value="${esc(x.date)}"></td><td><textarea data-menu="${x.id}" data-k="morning" placeholder="Morning tea">${esc(x.morning)}</textarea></td><td><textarea data-menu="${x.id}" data-k="lunch" placeholder="Lunch">${esc(x.lunch)}</textarea></td><td><textarea data-menu="${x.id}" data-k="dessert" placeholder="Dessert">${esc(x.dessert)}</textarea></td><td><button class="danger" data-rm-menu="${x.id}">Delete</button></td></tr>`).join("");
- $("menuCount").textContent=`${arr.length} menu dates shown · ${menu.length} total`;
+function render(){
+ updateCategories();
+ let fromV=document.getElementById("fromDate").value,toV=document.getElementById("toDate").value;
+ let from=fromV?new Date(fromV+"T00:00:00"):null,to=toV?new Date(toV+"T23:59:59"):null;
+ let q=document.getElementById("search").value.toLowerCase(),cat=document.getElementById("categoryFilter").value;
+ let filtered=items.map(x=>({...x,rangeDates:datesInRange(x.dates,from,to)})).filter(x=>(!from&&!to||x.rangeDates.length)&&(!q||(x.item+" "+x.category+" "+x.notes).toLowerCase().includes(q))&&(!cat||x.category===cat));
+ let key=document.getElementById("sortBy").value,dir=document.getElementById("direction").value==="asc"?1:-1;
+ filtered.sort((a,b)=>{let av,bv;if(key==="count"){av=a.rangeDates.length;bv=b.rangeDates.length}else if(key==="date"){av=a.rangeDates.length?dateObj(a.rangeDates[0]).getTime():Infinity;bv=b.rangeDates.length?dateObj(b.rangeDates[0]).getTime():Infinity}else{av=(a[key]||"").toString().toLowerCase();bv=(b[key]||"").toString().toLowerCase()}return (av>bv?1:av<bv?-1:0)*dir});
+ const body=document.getElementById("rows");body.innerHTML="";
+ filtered.forEach(x=>{let tr=document.createElement("tr");tr.innerHTML=`
+ <td><input aria-label="Item" value="${esc(x.item)}" data-id="${x.id}" data-field="item"></td>
+ <td><input aria-label="Category" value="${esc(x.category)}" data-id="${x.id}" data-field="category"></td>
+ <td>${x.rangeDates.length} <span class="muted">/ ${x.count} total</span></td>
+ <td><input aria-label="Dates needed" value="${esc(x.dates)}" data-id="${x.id}" data-field="dates" style="min-width:180px"></td>
+ <td><input class="qty" aria-label="Number to buy" type="number" min="0" step="0.1" value="${esc(x.buy)}" data-id="${x.id}" data-field="buy" placeholder="Enter"></td>
+ <td><input class="unit" aria-label="Unit" value="${esc(x.unit)}" data-id="${x.id}" data-field="unit" placeholder="e.g. packs"></td>
+ <td><input aria-label="Notes" value="${esc(x.notes)}" data-id="${x.id}" data-field="notes" style="min-width:180px"></td>
+ <td><div class="row-actions"><button class="small danger" data-delete="${x.id}">Delete</button></div></td>`;
+ body.appendChild(tr)});
+ document.getElementById("empty").hidden=filtered.length>0;
+ document.getElementById("itemStat").textContent=`${filtered.length} items shown · ${items.length} total`;
+ document.getElementById("dateStat").textContent=`Date range: ${fromV||"Any"} to ${toV||"Any"}`;
 }
-function renderShopping(){
- let from=$("filterFrom").value,to=$("filterTo").value,arr=shopping.map(x=>({...x,ds:(x.dates||[]).filter(d=>inRange(d,from,to))})).filter(x=>x.ds.length||(!from&&!to));
- let key=$("sortBy").value,dir=$("direction").value==="asc"?1:-1;
- arr.sort((a,b)=>{let av=key==="count"?a.ds.length:key==="date"?(a.ds[0]||"9999"):String(a[key]||"").toLowerCase(),bv=key==="count"?b.ds.length:key==="date"?(b.ds[0]||"9999"):String(b[key]||"").toLowerCase();return(av>bv?1:av<bv?-1:0)*dir});
- $("shoppingRows").innerHTML=arr.map(x=>`<tr><td><input data-shop="${x.id}" data-k="location" value="${esc(x.location)}"></td><td><select data-shop="${x.id}" data-k="category"><option ${x.category==="Morning Tea"?"selected":""}>Morning Tea</option><option ${x.category==="Lunch"?"selected":""}>Lunch</option><option ${x.category==="Dessert"?"selected":""}>Dessert</option><option ${x.category==="Other"?"selected":""}>Other</option></select></td><td><input data-shop="${x.id}" data-k="item" value="${esc(x.item)}"></td><td>${x.ds.length} <small>/ ${x.dates.length} total</small></td><td><input data-shop="${x.id}" data-k="datesText" value="${esc(x.dates.map(fmtDate).join(", "))}" title="Dates needed"></td><td><input type="number" min="0" step="0.1" data-shop="${x.id}" data-k="buy" value="${esc(x.buy)}" placeholder="Enter"></td><td><input data-shop="${x.id}" data-k="unit" value="${esc(x.unit)}" placeholder="packs / kg"></td><td><button class="danger" data-rm-shop="${x.id}">Delete</button></td></tr>`).join("");
- $("itemCount").textContent=`${arr.length} shopping items shown · ${shopping.length} total`;
-}
-$("menuRows").addEventListener("change",e=>{let id=e.target.dataset.menu,k=e.target.dataset.k;if(!id)return;let x=menu.find(a=>a.id==id);if(x){x[k]=e.target.value;renderMenu()}});
-$("menuRows").addEventListener("input",e=>{let id=e.target.dataset.menu,k=e.target.dataset.k;if(!id||k==="date")return;let x=menu.find(a=>a.id==id);if(x)x[k]=e.target.value});
-$("menuRows").addEventListener("click",e=>{if(e.target.dataset.rmMenu){menu=menu.filter(x=>x.id!=e.target.dataset.rmMenu);renderMenu()}});
-$("shoppingRows").addEventListener("change",e=>{let id=e.target.dataset.shop,k=e.target.dataset.k;if(!id)return;let x=shopping.find(a=>a.id==id);if(!x)return;if(k==="datesText"){x.dates=e.target.value.split(",").map(s=>isoFromToken(s.trim())).filter(Boolean)}else{x[k]=e.target.value}renderShopping()});
-$("shoppingRows").addEventListener("click",e=>{if(e.target.dataset.rmShop){shopping=shopping.filter(x=>x.id!=e.target.dataset.rmShop);renderShopping()}});
-["fromDate","toDate","menuSort"].forEach(id=>$(id).addEventListener("change",renderMenu));
-["filterFrom","filterTo","sortBy","direction"].forEach(id=>$(id).addEventListener("change",renderShopping));
-$("addDate").onclick=()=>{menu.push({id:Date.now(),date:$("fromDate").value||"2026-11-30",morning:"",lunch:"",dessert:""});renderMenu()};
-$("addItem").onclick=()=>{shopping.push({id:Date.now(),location:$("location").value,category:"Other",item:"New item",dates:[],buy:"",unit:""});renderShopping()};
-$("saveBtn").onclick=save;
-$("clearAll").onclick=()=>{if(confirm("Clear all menu and shopping list data?")){menu=[];shopping=[];renderMenu();renderShopping();save()}};
-function addMenu(date,morning="",lunch="",dessert=""){if(!date)return;let existing=menu.find(x=>x.date===date);if(existing){if(morning)existing.morning=morning;if(lunch)existing.lunch=lunch;if(dessert)existing.dessert=dessert}else menu.push({id:Date.now()+Math.random(),date,morning,lunch,dessert})}
-function cleanCell(s){return s.replace(/^[\s:;,.-]+|[\s:;,.-]+$/g,"").replace(/\s+/g," ").trim()}
-function extractDaily(text){
- // Read a table-like OCR stream. Detect date headings and assign nearby meal-labelled text;
- // also supports OCR output where each date appears in a separate line/row.
- const lines=text.split(/\r?\n/).map(cleanCell).filter(Boolean);
- let found=[],current=null,lastMeal=null;
- const dateRe=/\b(\d{1,2})\s*[\/.-]\s*(\d{1,2})\b/g;
- const isMeal=s=>/morning\s*tea|lunch|dessert|yoghurt|yogurt|ice\s*cream|jelly|pudding/i.test(s);
- function ensure(d){let iso=isoFromToken(d);if(!iso)return null;let x=found.find(a=>a.date===iso);if(!x){x={date:iso,morning:"",lunch:"",dessert:""};found.push(x)}return x}
- for(let line of lines){
-   let matches=[...line.matchAll(dateRe)];
-   if(matches.length){
-     // For a row containing several dates, split text after each date into separate date chunks.
-     let prefix=line.slice(0,matches[0].index).trim();
-     if(prefix && current && lastMeal) current[lastMeal]=(current[lastMeal]+" "+prefix).trim();
-     for(let i=0;i<matches.length;i++){
-       let start=matches[i].index+matches[i][0].length,end=i+1<matches.length?matches[i+1].index:line.length;
-       let chunk=cleanCell(line.slice(start,end));
-       let x=ensure(matches[i][0]);current=x;
-       if(/morning\s*tea/i.test(chunk)){lastMeal="morning";chunk=chunk.replace(/morning\s*tea/i,"")}
-       else if(/\blunch\b/i.test(chunk)){lastMeal="lunch";chunk=chunk.replace(/\blunch\b/i,"")}
-       else if(/\bdessert\b/i.test(chunk)){lastMeal="dessert";chunk=chunk.replace(/\bdessert\b/i,"")}
-       if(chunk&&lastMeal&&current)current[lastMeal]=(current[lastMeal]+" "+chunk).trim();
-     }
-     continue;
-   }
-   if(/morning\s*tea/i.test(line)){lastMeal="morning";line=cleanCell(line.replace(/morning\s*tea\s*:?/i,""))}
-   else if(/\blunch\b/i.test(line)){lastMeal="lunch";line=cleanCell(line.replace(/\blunch\s*:?/i,""))}
-   else if(/\bdessert\b/i.test(line)){lastMeal="dessert";line=cleanCell(line.replace(/\bdessert\s*:?/i,""))}
-   if(current&&lastMeal&&line&&!/staff member|clean up|enliven|monthly menu|current month/i.test(line)){
-     // If OCR puts multiple columns on one line, retain the full text in the meal cell for user review.
-     current[lastMeal]=(current[lastMeal]+" "+line).trim();
-   }
+document.addEventListener("change",e=>{let t=e.target;if(t.dataset.id&&t.dataset.field){let x=items.find(z=>z.id==t.dataset.id);if(x){x[t.dataset.field]=t.value;if(t.dataset.field==="count")x.count=Number(t.value);save();render()}}});
+document.addEventListener("click",e=>{if(e.target.dataset.delete){items=items.filter(x=>x.id!=e.target.dataset.delete);save();render()}});
+["fromDate","toDate","sortBy","direction","search","categoryFilter"].forEach(id=>document.getElementById(id).addEventListener(id==="search"?"input":"change",render));
+document.getElementById("saveBtn").onclick=save;
+document.getElementById("addBtn").onclick=()=>{let item=document.getElementById("newItem").value.trim();if(!item){alert("Please enter an item name.");return}
+items.push({id:Date.now(),item,category:document.getElementById("newCategory").value.trim()||"Other",count:Number(document.getElementById("newCount").value)||0,dates:document.getElementById("newDates").value.trim(),buy:document.getElementById("newBuy").value,unit:document.getElementById("newUnit").value.trim(),notes:document.getElementById("newNotes").value.trim()});
+save();["newItem","newCategory","newBuy","newUnit","newDates","newNotes"].forEach(id=>document.getElementById(id).value="");document.getElementById("newCount").value=1;render()};
+document.getElementById("resetBtn").onclick=()=>{if(confirm("Restore the original menu list? Your saved edits will be replaced.")){items=structuredClone(original);save();render()}};
+document.getElementById("exportBtn").onclick=()=>{
+ if(!window.XLSX){alert("Excel export library could not load. Check your internet connection and refresh.");return}
+ const list=items.map(x=>({"Item":x.item,"Category":x.category,"How many menu dates":x.count,"When needed":x.dates,"Number to buy":x.buy,"Unit":x.unit,"Notes":x.notes}));
+ const wb=XLSX.utils.book_new();const ws=XLSX.utils.json_to_sheet(list);ws["!cols"]=[{wch:30},{wch:22},{wch:20},{wch:55},{wch:18},{wch:14},{wch:45}];XLSX.utils.book_append_sheet(wb,ws,"Shopping List");
+ const menu=[["Date","Morning tea","Lunch","Dessert"],["30/11/2026","Biscuits, crackers, fruit","Leftovers from freezer","Fruit salad & yoghurt"],["1/12/2026","Biscuits, crackers, fruit","Chicken casserole: chicken, vegetables, canned tomato, rice","Yoghurt & fruit salad"],["2/12/2026","Biscuits, crackers, fruit","Fish fingers, chips, coleslaw","Jelly & fruit salad"],["3/12/2026","Biscuits, crackers, fruit","Beef stew","Ice cream & fruit"],["4/12/2026","Biscuits, crackers, fruit","Roast chicken, bread, vegetables","Instant pudding & fruit salad"],["7/12/2026","Biscuits, crackers, fruit","Club sandwich: chicken, bread, tomato, ham","Ice cream in a cone"],["8/12/2026","Biscuits, crackers, fruit","Hotdog: long bun, frank sausage, onion, coleslaw","Instant pudding & fruit"],["9/12/2026","Biscuits, crackers, fruit","Beef noodle: beef, noodles, vegetables","Handwritten change: ice cream"],["10/12/2026","Biscuits, crackers, fruit","Chicken meal: chicken, potato, coleslaw","Yoghurt & fruit"],["11/12/2026","Biscuits, crackers, fruit","Christmas party: bread, juice","Handwritten change: jelly"]];
+ XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(menu),"Menu by Date");XLSX.writeFile(wb,"Enliven_Onehunga_Shopping_List.xlsx");
+};
+document.getElementById("importBtn").onclick=()=>document.getElementById("fileInput").click();
+document.getElementById("fileInput").onchange=async e=>{let f=e.target.files[0];if(!f)return;try{if(!window.XLSX)throw Error("Excel import library did not load.");let data=await f.arrayBuffer(),wb=XLSX.read(data);let raw=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:""});if(!raw.length)throw Error("No shopping rows found in the first sheet.");items=raw.map((r,i)=>({id:Date.now()+i,item:r.Item||r.item||"",category:r.Category||r.category||"Other",count:Number(r["How many menu dates"]??r.count??0),dates:r["When needed"]||r.dates||"",buy:r["Number to buy"]??r.buy??"",unit:r.Unit||r.unit||"",notes:r.Notes||r.notes||""})).filter(x=>x.item);save();render();alert("Shopping list imported.");}catch(err){alert("Could not import file: "+err.message)}e.target.value=""};
+
+// Read uploaded menu resources: OCR for images/scanned PDFs, text extraction for PDF/Office files.
+const resourceFile=document.getElementById('resourceFile');
+const resourceText=document.getElementById('resourceText');
+const resourceStatus=document.getElementById('resourceStatus');
+function statusResource(t){resourceStatus.textContent=t;}
+async function readPdf(file){
+ if(!window.pdfjsLib) throw new Error('PDF reader could not load. Check your internet connection.');
+ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+ const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise; let out=[];
+ for(let n=1;n<=pdf.numPages;n++){
+  const page=await pdf.getPage(n), content=await page.getTextContent();
+  let txt=content.items.map(x=>x.str).join(' ');
+  if(txt.trim().length<20){
+   const viewport=page.getViewport({scale:1.7}), canvas=document.createElement('canvas'); canvas.width=viewport.width;canvas.height=viewport.height;
+   await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
+   const result=await Tesseract.recognize(canvas,'eng');txt=result.data.text;
+  }
+  out.push(txt);
  }
- // Fallback: dates found but no labelled meals. Keep source snippets grouped by date so users can assign them.
- if(!found.length){let all=[...text.matchAll(dateRe)];for(let m of all)ensure(m[0])}
- return found.sort((a,b)=>a.date.localeCompare(b.date));
+ return out.join('\n');
 }
-$("fillBtn").onclick=()=>{let text=$("sourceText").value;if(!text.trim()){alert("Read a picture/file or paste menu text first.");return}let rows=extractDaily(text);if(!rows.length){alert("Could not find menu dates. Please check the extracted text includes dates such as 2/11 or 30/11.");return}menu=rows.map((x,i)=>({...x,id:Date.now()+i}));renderMenu();$("readStatus").textContent=`Filled ${rows.length} menu date(s). Please check and correct Morning Tea, Lunch and Dessert for each date.`};
-$("sampleBtn").onclick=()=>{menu=[
-["2026-11-30","Biscuits, crackers, fruit","Leftovers from freezer","Fruit salad & yoghurt"],
-["2026-12-01","Biscuits, crackers, fruit","Chicken casserole: chicken, vegetables, tomato, rice","Yoghurt & fruit salad"],
-["2026-12-02","Biscuits, crackers, fruit","Fish fingers, chips, coleslaw","Jelly & fruit salad"],
-["2026-12-03","Biscuits, crackers, fruit","Beef stew, vegetables","Ice cream & fruit"],
-["2026-12-04","Biscuits, crackers, fruit","Roast chicken, bread, vegetables","Instant pudding & fruit salad"],
-["2026-12-07","Biscuits, crackers, fruit","Club sandwich: chicken, bread, tomato, ham","Ice cream in a cone"],
-["2026-12-08","Biscuits, crackers, fruit","Hotdog: long bun, frank sausage, onion, coleslaw","Instant pudding & fruit"],
-["2026-12-09","Biscuits, crackers, fruit","Beef noodle: beef, noodles, vegetables","Ice cream (handwritten change)"],
-["2026-12-10","Biscuits, crackers, fruit","Chicken meal: chicken, potato, coleslaw","Yoghurt & fruit"],
-["2026-12-11","Biscuits, crackers, fruit","Christmas party: bread, juice","Jelly (handwritten change)"]
-].map((r,i)=>({id:Date.now()+i,date:r[0],morning:r[1],lunch:r[2],dessert:r[3]}));renderMenu();$("readStatus").textContent="Example menu loaded. You can edit every cell."};
-function splitItems(s){return (s||"").split(/[,;\n]+/).map(cleanCell).filter(x=>x.length>1)}
-$("makeShopping").onclick=()=>{
- let loc=$("location").value.trim()||"Enliven Onehunga Day Service",map=new Map();
- for(let day of menu){let date=day.date;if(!inRange(date,$("fromDate").value,$("toDate").value))continue;
-  for(let [field,cat] of [["morning","Morning Tea"],["lunch","Lunch"],["dessert","Dessert"]]){
-   for(let item of splitItems(day[field])){if(/^(leftovers from freezer|tbc)$/i.test(item))continue;let key=cat+"|"+item.toLowerCase();if(!map.has(key))map.set(key,{id:Date.now()+map.size,location:loc,category:cat,item,dates:[],buy:"",unit:""});let x=map.get(key);if(!x.dates.includes(date))x.dates.push(date)}
+async function readResource(){
+ const file=resourceFile.files[0]; if(!file){alert('Please choose a menu photo or file first.');return;}
+ try{
+  statusResource('Reading '+file.name+'…');let text='';const name=file.name.toLowerCase();
+  if(file.type.startsWith('image/')){
+   if(!window.Tesseract)throw new Error('Photo reader could not load. Check your internet connection.');
+   const result=await Tesseract.recognize(file,'eng',{logger:m=>{if(m.status==='recognizing text')statusResource('Reading photo… '+Math.round((m.progress||0)*100)+'%');}});text=result.data.text;
+  }else if(name.endsWith('.pdf')) text=await readPdf(file);
+  else if(name.endsWith('.xlsx')||name.endsWith('.xls')||name.endsWith('.csv')){
+   if(!window.XLSX)throw new Error('Excel reader could not load.');
+   const wb=XLSX.read(await file.arrayBuffer());
+   text=wb.SheetNames.map(sn=>'SHEET: '+sn+'\n'+XLSX.utils.sheet_to_csv(wb.Sheets[sn])).join('\n\n');
+  }else text=await file.text();
+  resourceText.value=text;statusResource('Read complete. Review and correct the extracted text, then choose Create shopping list.');
+ }catch(err){statusResource('Could not read this file: '+err.message);}
+}
+function normalItem(s){return s.trim().replace(/^[-•*\d.)\s]+/,'').replace(/[.;:]$/,'').trim();}
+function makeShoppingFromResource(){
+ const lines=resourceText.value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);if(!lines.length){alert('Read a resource or paste menu text first.');return;}
+ const found=new Map();let meal='Other';let currentDate='';
+ const mealHead=/morning\s*tea|morning\s*snack/i, lunchHead=/\blunch\b/i, dessertHead=/dessert|pudding|sweet/i;
+ const ignore=/^(date|menu|morning tea|lunch|dessert|notes?|sheet:)/i;
+ const dateRx=/(\d{1,2})[\/.-](\d{1,2})(?:[\/.-](\d{2,4}))?/;
+ const knownCategory=(v)=>{let x=v.toLowerCase();if(/milk|cheese|yoghurt|yogurt|cream|butter/.test(x))return 'Dairy';if(/chicken|beef|pork|ham|sausage|fish|tuna|egg/.test(x))return 'Meat / protein';if(/apple|banana|orange|fruit|tomato|potato|onion|carrot|vegetable|lettuce|coleslaw/.test(x))return 'Fruit / vegetables';if(/bread|bun|rice|noodle|pasta|cracker|biscuit|chip/.test(x))return 'Bread / grains';if(/jelly|ice cream|pudding|custard|cake/.test(x))return 'Dessert';return meal==='Morning tea'?'Morning tea':meal==='Dessert'?'Dessert': 'Other lunch items';};
+ for(const line0 of lines){
+  let line=line0.replace(/[|;]/g,',');const dm=line.match(dateRx);if(dm)currentDate=String(Number(dm[1]))+'/'+String(Number(dm[2]));
+  if(mealHead.test(line))meal='Morning tea';else if(lunchHead.test(line))meal='Lunch';else if(dessertHead.test(line))meal='Dessert';
+  if(ignore.test(line)&&!/,/.test(line))continue;
+  // Remove date and meal labels, then split ingredient lists into editable items.
+  let body=line.replace(dateRx,'').replace(/morning\s*tea|lunch|dessert|breakfast|menu\s*:/ig,'').replace(/^\s*[-:–]+/,'').trim();
+  if(!body||/^(sheet|date)\s*:/i.test(body))continue;
+  let parts=body.split(/,|\s+and\s+|\s*&\s*/i).map(normalItem).filter(x=>x.length>1&&!/^(menu|date|notes?)$/i.test(x));
+  // If a line is a dish description, retain it as an item so staff can edit it rather than silently discard it.
+  for(let item of parts){
+   item=item.replace(/\s{2,}/g,' ').trim();if(!item||item.length>65)continue;
+   const key=item.toLowerCase();if(!found.has(key))found.set(key,{id:Date.now()+found.size,item,category:knownCategory(item),count:0,dates:'',buy:'',unit:'',notes:meal+(currentDate?' · '+currentDate:'')});
+   const obj=found.get(key);obj.count+=1;if(currentDate){let ds=obj.dates?obj.dates.split(', '):[];if(!ds.includes(currentDate))ds.push(currentDate);obj.dates=ds.join(', ');}
   }
  }
- shopping=[...map.values()];renderShopping();$("saveStatus").textContent=`Created ${shopping.length} shopping rows from ${menu.length} menu dates. Review the list and enter purchase quantities.`;
-};
-async function getFileText(f){
- let n=f.name.toLowerCase(),type=f.type||"";
- if(n.endsWith(".txt")||n.endsWith(".csv"))return await f.text();
- if(n.endsWith(".xlsx")||n.endsWith(".xls")){if(!window.XLSX)throw Error("Excel library failed to load");let wb=XLSX.read(await f.arrayBuffer());return wb.SheetNames.map(s=>XLSX.utils.sheet_to_csv(wb.Sheets[s])).join("\n")}
- if(n.endsWith(".pdf")){if(!window.pdfjsLib)throw Error("PDF library failed to load");pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";let pdf=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise,out=[];for(let i=1;i<=pdf.numPages;i++){let page=await pdf.getPage(i),c=await page.getTextContent(),txt=c.items.map(x=>x.str).join(" ");if(txt.trim().length>20)out.push(txt);else{let vp=page.getViewport({scale:1.7}),cv=document.createElement("canvas"),ctx=cv.getContext("2d");cv.width=vp.width;cv.height=vp.height;await page.render({canvasContext:ctx,viewport:vp}).promise;out.push(await ocrCanvas(cv,`PDF page ${i}`))}}return out.join("\n")}
- if(type.startsWith("image/")||/\.(png|jpe?g|webp|bmp|gif|tiff?)$/.test(n)){if(!window.Tesseract)throw Error("OCR library failed to load");let url=URL.createObjectURL(f);try{let im=new Image();im.src=url;await im.decode();let scale=Math.min(2,2400/Math.max(im.width,im.height)),cv=document.createElement("canvas");cv.width=im.width*scale;cv.height=im.height*scale;cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);return await ocrCanvas(cv,"Menu picture")}finally{URL.revokeObjectURL(url)}}
- throw Error("Choose a photo, PDF, Excel, CSV or text file.");
+ if(!found.size){alert('No menu items were detected. Try adding commas between food items, for example: Lunch: chicken, rice, vegetables.');return;}
+ const imported=[...found.values()];
+ if(!confirm('Create '+imported.length+' shopping list items from the resource? This replaces the current list. Export your current list first if you need a backup.'))return;
+ items=imported;save();render();statusResource('Created '+items.length+' editable shopping list items. Please check categories, dates and quantities.');
 }
-async function ocrCanvas(cv,label){let r=await Tesseract.recognize(cv,"eng",{logger:m=>{if(m.status==="recognizing text")$("readStatus").textContent=`${label}: ${Math.round(m.progress*100)}%`}});return r.data.text}
-$("sourceFile").onchange=()=>$("sourceName").textContent=$("sourceFile").files[0]?.name||"No source selected";
-$("clearSource").onclick=()=>{$("sourceFile").value="";$("sourceText").value="";$("sourceName").textContent="No source selected yet.";$("readStatus").textContent=""};
-$("readBtn").onclick=async()=>{let f=$("sourceFile").files[0];if(!f){alert("Choose a source file first.");return}$("readBtn").disabled=true;try{$("sourceText").value=await getFileText(f);$("readStatus").textContent="Source read. Check the extracted text, then press Fill daily menu form from text."}catch(e){$("readStatus").textContent="Could not read source: "+e.message}finally{$("readBtn").disabled=false}};
-$("exportBtn").onclick=()=>{if(!window.XLSX){alert("Excel export library not loaded. Check internet.");return}let wb=XLSX.utils.book_new();let loc=$("location").value;
-let menuData=menu.map(x=>({Location:loc,Date:x.date,"Morning Tea":x.morning,Lunch:x.lunch,Dessert:x.dessert}));
-let shopData=shopping.map(x=>({Location:x.location,"Meal Category":x.category,Item:x.item,"How many dates":x.dates.length,"When needed":x.dates.map(fmtDate).join(", "),"Number to buy":x.buy,Unit:x.unit}));
-let mws=XLSX.utils.json_to_sheet(menuData);mws["!cols"]=[{wch:30},{wch:16},{wch:40},{wch:60},{wch:40}];XLSX.utils.book_append_sheet(wb,mws,"Daily Menu");
-let sws=XLSX.utils.json_to_sheet(shopData);sws["!cols"]=[{wch:30},{wch:18},{wch:32},{wch:18},{wch:45},{wch:18},{wch:12}];XLSX.utils.book_append_sheet(wb,sws,"Shopping List");
-XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Original extracted text"],[$("sourceText").value]]),"Source Text");
-XLSX.writeFile(wb,"Enliven_Onehunga_Menu_and_Shopping.xlsx")};
-$("importBtn").onclick=()=>$("importFile").click();
-$("importFile").onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let wb=XLSX.read(await f.arrayBuffer());if(wb.Sheets["Daily Menu"]){menu=XLSX.utils.sheet_to_json(wb.Sheets["Daily Menu"]).map((r,i)=>({id:Date.now()+i,date:String(r.Date||"").slice(0,10),morning:r["Morning Tea"]||"",lunch:r.Lunch||"",dessert:r.Dessert||""}));}if(wb.Sheets["Shopping List"]){shopping=XLSX.utils.sheet_to_json(wb.Sheets["Shopping List"]).map((r,i)=>({id:Date.now()+i,location:r.Location||"",category:r["Meal Category"]||"Other",item:r.Item||"",dates:String(r["When needed"]||"").split(",").map(s=>isoFromToken(s.trim())).filter(Boolean),buy:r["Number to buy"]||"",unit:r.Unit||""}))}renderMenu();renderShopping();$("readStatus").textContent="Spreadsheet imported. Check the imported rows."; }catch(err){alert("Could not import: "+err.message)}e.target.value=""};
-load();if(!menu.length&&!shopping.length){menu=[]}if(localStorage.getItem("enlivenMenuShopV2")){try{let d=JSON.parse(localStorage.getItem("enlivenMenuShopV2"));$("location").value=d.location||"Enliven Onehunga Day Service"}catch(e){}}
-renderMenu();renderShopping();
-</script></body></html>
+document.getElementById('readResourceBtn').addEventListener('click',readResource);
+document.getElementById('makeListBtn').addEventListener('click',makeShoppingFromResource);
+render();
+</script>
+</body></html>
