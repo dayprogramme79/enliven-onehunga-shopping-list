@@ -47,7 +47,7 @@ footer{color:var(--muted);font-size:13px;padding:8px 2px}
  body.print-all .panel{display:block!important}
  button,input[type=file],.no-print,.row-actions{display:none!important}
  textarea{border:0!important;padding:0!important;resize:none!important;overflow:visible!important;white-space:pre-wrap!important;color:#000!important}
- table{width:100%;border-collapse:collapse}th,td{border:1px solid #555!important;color:#000!important;padding:6px!important}
+ table{width:100%;border-collapse:collapse}th,td{border:1px solid #555!important;color:#000!important;padding:6px!important}\n input:not([type=file]){display:inline-block!important;border:0!important;border-radius:0!important;padding:0!important;background:transparent!important;color:#000!important;box-shadow:none!important;font-size:10pt!important}
  th{background:#eee!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
  .muted{color:#333!important}
 }
@@ -101,7 +101,7 @@ footer{color:var(--muted);font-size:13px;padding:8px 2px}
   <div style="display:flex;align-items:end"><button id="addBtn">Add item</button></div>
  </div>
 </section>
-<section class="panel">
+<section class="panel" id="shoppingPanel">
  <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
   <h2 style="margin:0;font-size:19px">Shopping items</h2><span class="muted">Change “Number to buy” to the amount you want to purchase.</span>
  </div>
@@ -109,6 +109,10 @@ footer{color:var(--muted);font-size:13px;padding:8px 2px}
  <table><thead><tr><th>Item</th><th>Category</th><th>How many menu dates</th><th>When needed</th><th>Number to buy</th><th>Unit</th><th>Notes</th><th>Actions</th></tr></thead><tbody id="rows"></tbody></table>
  <div id="empty" class="empty" hidden>No items match these filters.</div>
  </div>
+</section>
+<section class="panel" id="finalShoppingPanel">
+ <h2 style="margin:0 0 12px;font-size:19px">Final shopping list – grouped by category</h2>
+ <div class="table-wrap"><table style="min-width:600px"><thead><tr><th>Shopping item</th><th>Number to buy</th><th>Unit</th><th>When needed</th></tr></thead><tbody id="finalRows"></tbody></table><div id="finalEmpty" class="empty" hidden>No shopping items.</div></div>
 </section>
 <footer>Tip: Export creates an .xlsx workbook. In Google Sheets, choose File → Import → Upload and select the exported workbook. The app stores saved changes in this browser on this device; export regularly to keep a backup.</footer>
 </main>
