@@ -36,6 +36,21 @@ td .qty{width:95px}td .unit{width:85px}
 footer{color:var(--muted);font-size:13px;padding:8px 2px}
 @media(max-width:800px){.controls{grid-template-columns:repeat(2,minmax(0,1fr))}.formgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:430px){.controls,.formgrid{grid-template-columns:1fr}}
+
+@media print{
+ body{background:#fff!important;color:#000!important;font-size:12pt}
+ header{background:#fff!important;color:#000!important;padding:0 0 12px!important;border-bottom:2px solid #000}
+ header p{color:#000!important}main{max-width:none;margin:0;padding:0}
+ .panel{display:none!important;box-shadow:none!important;border:0!important;padding:0!important;margin:0!important}
+ body.print-shopping #shoppingPanel{display:block!important}
+ body.print-resource #resourcePanel{display:block!important}
+ body.print-all .panel{display:block!important}
+ button,input[type=file],.no-print,.row-actions{display:none!important}
+ textarea{border:0!important;padding:0!important;resize:none!important;overflow:visible!important;white-space:pre-wrap!important;color:#000!important}
+ table{width:100%;border-collapse:collapse}th,td{border:1px solid #555!important;color:#000!important;padding:6px!important}
+ th{background:#eee!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ .muted{color:#333!important}
+}
 </style>
 </head>
 <body>
@@ -56,6 +71,8 @@ footer{color:var(--muted);font-size:13px;padding:8px 2px}
   <button id="exportBtn" class="small">Export Excel for Google Sheets</button>
   <button id="importBtn" class="secondary small">Import Excel file</button><input id="fileInput" type="file" accept=".xlsx,.xls,.csv" hidden>
   <button id="resetBtn" class="danger small">Restore original list</button>
+  <button id="printShoppingBtn" class="secondary small" type="button">Print shopping list</button>
+  <button id="printTextBtn" class="secondary small" type="button">Print menu text</button>
  </div>
 </section>
 <section class="panel" id="resourcePanel">
@@ -239,6 +256,15 @@ function makeShoppingFromResource(){
 }
 document.getElementById('readResourceBtn').addEventListener('click',readResource);
 document.getElementById('makeListBtn').addEventListener('click',makeShoppingFromResource);
+
+function printPanel(mode){
+ document.body.classList.remove('print-shopping','print-resource','print-all');
+ document.body.classList.add(mode==='shopping'?'print-shopping':'print-resource');
+ window.print();
+}
+window.addEventListener('afterprint',()=>document.body.classList.remove('print-shopping','print-resource','print-all'));
+document.getElementById('printShoppingBtn').addEventListener('click',()=>printPanel('shopping'));
+document.getElementById('printTextBtn').addEventListener('click',()=>printPanel('resource'));
 render();
 </script>
 </body></html>
